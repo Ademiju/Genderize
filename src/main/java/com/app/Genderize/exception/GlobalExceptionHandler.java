@@ -7,13 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<GenericResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
@@ -43,9 +44,40 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(GenericResponse.builder().status("error").message(ex.getMessage()).build(), HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<GenericResponse<Object>> handleException(Exception ex) {
-        log.error("Exception", ex);
-        return new ResponseEntity<>(GenericResponse.builder().status("error").message(ex.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+//    @ExceptionHandler(Exception.class)
+//    public ResponseEntity<GenericResponse<Object>> handleException(Exception ex) {
+//        log.error("Exception", ex);
+//        return new ResponseEntity<>(GenericResponse.builder().status("error").message(ex.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
+//    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<GenericResponse<?>> handleExternal(ExternalApiException ex) {
+        return ResponseEntity.status(502).body(
+                GenericResponse.builder()
+                        .status("error")
+                        .message(ex.getMessage())
+                        .build()
+        );
     }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    public ResponseEntity<GenericResponse<?>> handleNotFound() {
+        return ResponseEntity.status(404).body(
+                GenericResponse.builder()
+                        .status("error")
+                        .message("Profile not found")
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<GenericResponse<?>> handleGeneric(Exception ex) {
+        return ResponseEntity.status(500).body(
+                GenericResponse.builder()
+                        .status("error")
+                        .message(ex.getMessage())
+                        .build()
+        );
+    }
+
 }
