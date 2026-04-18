@@ -104,11 +104,19 @@ public class ProfileService {
     }
 
     public List<Profile> getAll(String gender, String countryId, String ageGroup) {
-        return repository.filter(gender, countryId, ageGroup);
+        return repository.filter(
+                like(gender),
+                like(countryId),
+                like(ageGroup)
+        );
     }
 
     public void delete(UUID id) {
         if (!repository.existsById(id)) throw new NoSuchElementException();
         repository.deleteById(id);
+    }
+
+    private String like(String v) {
+        return v == null ? null : "%" + v.toLowerCase() + "%";
     }
 }

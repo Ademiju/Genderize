@@ -2,10 +2,7 @@ package com.app.Genderize.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -28,13 +25,16 @@ public class Profile {
 
     private String name;
 
+    @Column(columnDefinition = "varchar")
     private String gender;
     private double genderProbability;
     private int sampleSize;
 
     private Integer age;
+    @Column(columnDefinition = "varchar")
     private String ageGroup;
 
+    @Column(columnDefinition = "varchar")
     private String countryId;
     private double countryProbability;
 
