@@ -70,6 +70,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(BadCredentialException.class)
+    public ResponseEntity<GenericResponse<?>> handleBadCredentialException(BadCredentialException ex) {
+        return ResponseEntity.status(400).body(
+                GenericResponse.builder()
+                        .status("error")
+                        .message(ex.getMessage())
+                        .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<GenericResponse<?>> handleGeneric(Exception ex) {
         return ResponseEntity.status(500).body(

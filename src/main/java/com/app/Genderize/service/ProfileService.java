@@ -3,6 +3,7 @@ package com.app.Genderize.service;
 import com.app.Genderize.dto.AgifyDto;
 import com.app.Genderize.dto.GenderizeDto;
 import com.app.Genderize.dto.NationalizeDto;
+import com.app.Genderize.exception.BadCredentialException;
 import com.app.Genderize.exception.ExternalApiException;
 import com.app.Genderize.model.Profile;
 import com.app.Genderize.repository.ProfileRepository;
@@ -27,7 +28,7 @@ public class ProfileService {
     public Object createProfile(String name) {
 
         if (name == null || name.trim().isEmpty()) {
-            throw new IllegalArgumentException("Missing or empty name");
+            throw new BadCredentialException("Missing or empty name");
         }
 
         String normalized = name.trim().toLowerCase();
