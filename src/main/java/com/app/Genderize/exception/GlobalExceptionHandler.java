@@ -1,6 +1,6 @@
 package com.app.Genderize.exception;
 
-import com.app.Genderize.response.GenericResponse;
+import com.app.Genderize.dto.response.GenericResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -44,11 +45,11 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(GenericResponse.builder().status("error").message(ex.getMessage()).build(), HttpStatus.BAD_REQUEST);
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public ResponseEntity<GenericResponse<Object>> handleException(Exception ex) {
-//        log.error("Exception", ex);
-//        return new ResponseEntity<>(GenericResponse.builder().status("error").message(ex.getMessage()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<GenericResponse<Object>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        log.error("Exception", ex);
+        return new ResponseEntity<>(GenericResponse.builder().status("error").message("Invalid parameter type").build(), HttpStatus.UNPROCESSABLE_ENTITY);
+    }
 
     @ExceptionHandler(ExternalApiException.class)
     public ResponseEntity<GenericResponse<?>> handleExternal(ExternalApiException ex) {

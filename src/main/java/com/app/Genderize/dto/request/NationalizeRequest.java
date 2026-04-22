@@ -1,11 +1,11 @@
-package com.app.Genderize.dto;
+package com.app.Genderize.dto.request;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class NationalizeDto {
+public class NationalizeRequest {
     private String name;
     private List<Country> country;
 

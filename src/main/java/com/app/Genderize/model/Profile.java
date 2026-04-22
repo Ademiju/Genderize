@@ -28,7 +28,7 @@ public class Profile {
     @Column(columnDefinition = "varchar")
     private String gender;
     private double genderProbability;
-    private int sampleSize;
+//    private int sampleSize;
 
     private Integer age;
     @Column(columnDefinition = "varchar")

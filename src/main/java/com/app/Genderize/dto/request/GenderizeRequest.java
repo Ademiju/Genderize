@@ -1,9 +1,9 @@
-package com.app.Genderize.dto;
+package com.app.Genderize.dto.request;
 
 import lombok.Data;
 
 @Data
-public class GenderizeDto {
+public class GenderizeRequest {
     private String name;
     private String gender;
     private Double probability;

@@ -1,8 +1,8 @@
 package com.app.Genderize.service;
 
 import com.app.Genderize.config.SystemProperties;
-import com.app.Genderize.response.GenderizeResponse;
-import com.app.Genderize.response.GenericResponse;
+import com.app.Genderize.dto.response.GenderizeResponse;
+import com.app.Genderize.dto.response.GenericResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -15,7 +15,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
 @Service

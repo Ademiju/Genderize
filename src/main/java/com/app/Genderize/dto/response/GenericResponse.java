@@ -1,4 +1,4 @@
-package com.app.Genderize.response;
+package com.app.Genderize.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -15,6 +15,9 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class GenericResponse<T> {
     private String status;
+    private Integer page;
+    private Integer limit;
+    private Long total;
     private T data;
     private String message;
 }

@@ -1,10 +1,9 @@
 package com.app.Genderize.controller;
 
-import com.app.Genderize.response.GenericResponse;
+import com.app.Genderize.dto.response.GenericResponse;
 import com.app.Genderize.service.GenderizeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
