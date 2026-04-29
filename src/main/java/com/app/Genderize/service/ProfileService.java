@@ -1,5 +1,6 @@
 package com.app.Genderize.service;
 
+import com.app.Genderize.config.SystemProperties;
 import com.app.Genderize.dto.request.AgifyRequest;
 import com.app.Genderize.dto.request.GenderizeRequest;
 import com.app.Genderize.dto.request.NationalizeRequest;
@@ -32,10 +33,8 @@ import java.util.regex.Pattern;
 public class ProfileService {
     private final ProfileRepository repository;
     private final RestTemplate restTemplate;
+    private final SystemProperties systemProperties;
 
-    private static final String GENDERIZE = "https://api.genderize.io?name=%s";
-    private static final String AGIFY = "https://api.agify.io?name=%s";
-    private static final String NATIONALIZE = "https://api.nationalize.io?name=%s";
     private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("age", "created_at", "gender_probability");
     private static final Set<String> ALLOWED_SORT_ORDERS = Set.of("asc", "desc");
     private static final Pattern ABOVE_AGE_PATTERN = Pattern.compile("\\b(?:above|over|older than)\\s+(\\d+)\\b");
@@ -48,9 +47,9 @@ public class ProfileService {
             throw new BadCredentialException("Missing or empty name");
         }
 
-        String normalized = name.trim().toLowerCase();
+        String normalizedName = name.trim().toLowerCase();
 
-        Optional<Profile> existing = repository.findByNameIgnoreCase(normalized);
+        Optional<Profile> existing = repository.findByNameIgnoreCase(normalizedName);
         if (existing.isPresent()) {
             return Map.of(
                     "status", "success",
@@ -59,9 +58,9 @@ public class ProfileService {
             );
         }
 
-        GenderizeRequest genderizeRequest = restTemplate.getForObject(GENDERIZE.formatted(normalized), GenderizeRequest.class);
-        AgifyRequest agifyRequest = restTemplate.getForObject(AGIFY.formatted(normalized), AgifyRequest.class);
-        NationalizeRequest nationalizeRequest = restTemplate.getForObject(NATIONALIZE.formatted(normalized), NationalizeRequest.class);
+        GenderizeRequest genderizeRequest = restTemplate.getForObject(systemProperties.getGenderizeBaseUrl().formatted(normalizedName), GenderizeRequest.class);
+        AgifyRequest agifyRequest = restTemplate.getForObject(systemProperties.getAgifyBaseUrl().formatted(normalizedName), AgifyRequest.class);
+        NationalizeRequest nationalizeRequest = restTemplate.getForObject(systemProperties.getNationalizeBaseUrl().formatted(normalizedName), NationalizeRequest.class);
 
         validateGenderize(genderizeRequest);
         validateAgify(agifyRequest);
@@ -73,7 +72,7 @@ public class ProfileService {
 
         Profile profile = Profile.builder()
                 .id(UuidCreator.getTimeOrdered()) // replace with UUID v7 if needed
-                .name(normalized)
+                .name(normalizedName)
                 .gender(genderizeRequest.getGender())
                 .genderProbability(genderizeRequest.getProbability())
 //                .sampleSize(genderizeDto.getCount())

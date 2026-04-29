@@ -5,6 +5,7 @@ import com.app.Genderize.dto.response.PageResponse;
 import com.app.Genderize.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -13,11 +14,11 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/profiles")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class ProfileController {
 
     private final ProfileService service;
 
+    @PreAuthorize("hasRole('admin')")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, String> body) {
         Object response = service.createProfile(body.get("name"));
@@ -29,6 +30,7 @@ public class ProfileController {
         return ResponseEntity.status(201).body(response);
     }
 
+    @PreAuthorize("hasAnyRole('admin','analyst')")
     @GetMapping("/{id}")
     public GenericResponse<?> getOne(@PathVariable UUID id) {
         return GenericResponse.builder()
@@ -37,6 +39,7 @@ public class ProfileController {
                 .build();
     }
 
+    @PreAuthorize("hasAnyRole('admin','analyst')")
     @GetMapping
     public GenericResponse<?> getAll(
             @RequestParam(required = false) String gender,
@@ -74,6 +77,7 @@ public class ProfileController {
                 .build();
     }
 
+    @PreAuthorize("hasAnyRole('admin','analyst')")
     @GetMapping("/search")
     public ResponseEntity<?> search(
             @RequestParam("q") String query,
@@ -84,6 +88,7 @@ public class ProfileController {
 
     }
 
+    @PreAuthorize("hasAnyRole('admin')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         service.delete(id);
