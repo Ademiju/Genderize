@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class JwtService {
     private final Key key;
@@ -26,6 +28,7 @@ public class JwtService {
 
 
     public String generateAccessToken(User user) {
+        log.info("Generating access token for user: {}", user.getUsername());
         return Jwts.builder()
                 .setSubject(user.getId().toString())
                 .claim("role", user.getRole())

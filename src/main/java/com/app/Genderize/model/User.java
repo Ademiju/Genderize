@@ -4,6 +4,8 @@ import com.app.Genderize.enums.Role;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -32,6 +34,9 @@ public class User {
 
     private String email;
 
+    private String avatarUrl;
+
+    @Enumerated(EnumType.STRING)
     private Role role = Role.analyst;
 
     private boolean isActive = true;

@@ -79,6 +79,7 @@ public class ProfileService {
                 .age(agifyRequest.getAge())
                 .ageGroup(classifyAge(agifyRequest.getAge()))
                 .countryId(topCountry.getCountry_id())
+                .countryName(countryName(topCountry.getCountry_id()))
                 .countryProbability(topCountry.getProbability())
                 .createdAt(Instant.now())
                 .build();
@@ -176,6 +177,7 @@ public class ProfileService {
         .page(resolvedPage)
         .limit(resolvedLimit)
         .total(result.getTotalElements())
+        .totalPages(result.getTotalPages())
         .data(result.getContent()).build();
     }
 
@@ -210,8 +212,46 @@ public class ProfileService {
                 .page(response.getPage())
                 .limit(response.getLimit())
                 .total(response.getTotal())
+                .totalPages(response.getTotalPages())
                 .data(response.getData())
                 .build());
+    }
+
+    public List<Profile> exportProfiles(
+            String gender,
+            String ageGroup,
+            String countryId,
+            Integer minAge,
+            Integer maxAge,
+            Double minGenderProbability,
+            Double minCountryProbability,
+            String sortBy,
+            String order
+    ) {
+        if (minAge != null && maxAge != null && minAge > maxAge) {
+            throw new BadCredentialException("min_age cannot be greater than max_age");
+        }
+
+        String resolvedSortBy = sortBy == null || sortBy.isBlank() ? "created_at" : sortBy.trim().toLowerCase(Locale.ROOT);
+        String resolvedOrder = order == null || order.isBlank() ? "desc" : order.trim().toLowerCase(Locale.ROOT);
+
+        if (!ALLOWED_SORT_FIELDS.contains(resolvedSortBy)) {
+            throw new BadCredentialException("sort_by must be one of age, created_at, gender_probability");
+        }
+        if (!ALLOWED_SORT_ORDERS.contains(resolvedOrder)) {
+            throw new BadCredentialException("order must be asc or desc");
+        }
+
+        Specification<Profile> specification = Specification.allOf(equalsIgnoreCase("gender", gender))
+                .and(equalsIgnoreCase("ageGroup", ageGroup))
+                .and(equalsIgnoreCase("countryId", countryId))
+                .and(greaterThanOrEqualTo("age", minAge))
+                .and(lessThanOrEqualTo("age", maxAge))
+                .and(greaterThanOrEqualTo("genderProbability", minGenderProbability))
+                .and(greaterThanOrEqualTo("countryProbability", minCountryProbability));
+
+        Sort sort = Sort.by("asc".equals(resolvedOrder) ? Sort.Direction.ASC : Sort.Direction.DESC, mapSortField(resolvedSortBy));
+        return repository.findAll(specification, sort);
     }
 
     private String mapSortField(String sortBy) {
@@ -220,6 +260,13 @@ public class ProfileService {
             case "gender_probability" -> "genderProbability";
             default -> "createdAt";
         };
+    }
+
+    private String countryName(String countryId) {
+        if (countryId == null || countryId.isBlank()) {
+            return null;
+        }
+        return Locale.of("", countryId).getDisplayCountry(Locale.ENGLISH);
     }
 
     private Specification<Profile> equalsIgnoreCase(String fieldName, String value) {

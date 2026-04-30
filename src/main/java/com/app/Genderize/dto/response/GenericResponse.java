@@ -18,6 +18,8 @@ public class GenericResponse<T> {
     private Integer page;
     private Integer limit;
     private Long total;
+    private Integer totalPages;
+    private Object links;
     private T data;
     private String message;
 }

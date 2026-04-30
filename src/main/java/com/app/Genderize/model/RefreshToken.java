@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "refresh_token", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+@Table(name = "refresh_token", uniqueConstraints = @UniqueConstraint(columnNames = "tokenHash"))
 @Data
 public class RefreshToken {
     @Id

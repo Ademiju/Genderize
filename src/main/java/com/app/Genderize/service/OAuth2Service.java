@@ -20,6 +20,10 @@ public class OAuth2Service {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String generateGithubAccessToken(String code, String codeVerifier) {
+        return generateGithubAccessToken(code, codeVerifier, null);
+    }
+
+    public String generateGithubAccessToken(String code, String codeVerifier, String redirectUri) {
         // call GitHub token endpoint
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
@@ -29,6 +33,9 @@ public class OAuth2Service {
         body.put("client_secret", systemProperties.getGithubClientSecret());
         body.put("code", code);
         body.put("code_verifier", codeVerifier);
+        if (redirectUri != null && !redirectUri.isBlank()) {
+            body.put("redirect_uri", redirectUri);
+        }
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body,headers);
         String url = systemProperties.getGithubTokenUrl();
         log.info("Sending request {} to Github API {}", entity.getBody(), url);
@@ -64,5 +71,35 @@ public class OAuth2Service {
             return null;
         }
 
+    }
+
+    public String getPrimaryEmail(String accessToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(accessToken);
+
+        HttpEntity<?> entity = new HttpEntity<>(headers);
+        var response = restTemplate.exchange(
+                "https://api.github.com/user/emails",
+                HttpMethod.GET,
+                entity,
+                List.class
+        );
+
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+            return null;
+        }
+
+        for (Object item : response.getBody()) {
+            if (item instanceof Map<?, ?> email) {
+                boolean primary = Boolean.TRUE.equals(email.get("primary"));
+                boolean verified = Boolean.TRUE.equals(email.get("verified"));
+                Object value = email.get("email");
+                if (primary && verified && value != null) {
+                    return String.valueOf(value);
+                }
+            }
+        }
+
+        return null;
     }
 }

@@ -21,4 +21,8 @@ public class SystemProperties {
     private String githubTokenUrl;
     private String githubUserUrl;
     private String githubAuthorizeUrl;
+    private String githubRedirectUri;
+    private String webSuccessRedirectUrl;
+    private String webFailureRedirectUrl;
+    private boolean cookieSecure = true;
 }
