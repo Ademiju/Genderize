@@ -3,6 +3,8 @@ package com.app.Genderize.controller;
 import com.app.Genderize.config.SystemProperties;
 import com.app.Genderize.config.auth.OAuthStateCache;
 import com.app.Genderize.enums.Role;
+import com.app.Genderize.exception.BadCredentialException;
+import com.app.Genderize.exception.ExternalApiException;
 import com.app.Genderize.model.RefreshToken;
 import com.app.Genderize.model.User;
 import com.app.Genderize.service.OAuth2Service;
@@ -15,17 +17,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Map;
 
 @Slf4j
@@ -66,20 +63,20 @@ public class AuthController {
         response.sendRedirect(url);
     }
 
-    @GetMapping("/github-callback")
-    public void githubCallback(@RequestParam String code,
+    @GetMapping("/github/callback")
+    public TokenService.AuthResponse githubCallback(@RequestParam String code,
                                @RequestParam String state,
                                HttpServletResponse response) throws IOException {
         String verifier = oauthStateCache.get(state);
         if (verifier == null) {
             response.sendRedirect(systemProperties.getWebFailureRedirectUrl());
-            return;
         }
 
         TokenService.AuthResponse tokens = completeGithubLogin(code, verifier, systemProperties.getGithubRedirectUri());
         log.info("Auth Response : {}", tokens);
         addAuthCookies(response, tokens);
         response.sendRedirect(systemProperties.getWebSuccessRedirectUrl());
+        return tokens;
     }
 
     @GetMapping("/github/cli")
@@ -100,14 +97,17 @@ public class AuthController {
         return Map.of("status", "success", "url", url);
     }
 
-    @PostMapping("/github/cli/callback")
+    @PostMapping("/github/callback")
     public TokenService.AuthResponse cliCallback(@RequestBody Map<String, String> req) {
+        if (!req.get("redirect_uri").startsWith("http://127.0.0.1")) {
+            throw new BadCredentialException("Invalid redirect URI");
+        }
         return completeGithubLogin(req.get("code"), req.get("code_verifier"), req.get("redirect_uri"));
     }
 
     private TokenService.AuthResponse completeGithubLogin(String code, String verifier, String redirectUri) {
         if (code == null || code.isBlank() || verifier == null || verifier.isBlank()) {
-            throw new RuntimeException("Missing code or code_verifier");
+            throw new BadCredentialException("Missing code or code_verifier");
         }
 
         if(code.equals("test_code") || code.equals("analyst_test_code")){
@@ -118,7 +118,7 @@ public class AuthController {
         String githubToken = oAuth2Service.generateGithubAccessToken(code, verifier, redirectUri);
         Map githubUser = oAuth2Service.getUser(githubToken);
         if (githubUser == null) {
-            throw new RuntimeException("Unable to load GitHub user");
+            throw new ExternalApiException("Unable to load GitHub user");
         }
         if (githubUser.get("email") == null) {
             String primaryEmail = oAuth2Service.getPrimaryEmail(githubToken);
@@ -153,30 +153,6 @@ public class AuthController {
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         log.info("Completed addAuthCookies service");
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of(
-                    "status", "error",
-                    "message", "Authentication required"
-            ));
-        }
-
-        return ResponseEntity.ok(Map.of(
-                "status", "success",
-                "data", Map.of(
-                        "id", user.getId(),
-                        "username", user.getUsername(),
-                        "email", user.getEmail() == null ? "" : user.getEmail(),
-                        "avatar_url", user.getAvatarUrl() == null ? "" : user.getAvatarUrl(),
-                        "role", user.getRole(),
-                        "is_active", user.isActive(),
-                        "last_login_at", user.getLastLoginAt() == null ? "" : user.getLastLoginAt(),
-                        "created_at", user.getCreatedAt() == null ? "" : user.getCreatedAt()
-                )
-        ));
     }
 
     @PostMapping("/refresh")
@@ -228,9 +204,5 @@ public class AuthController {
                 .path("/")
                 .maxAge(0)
                 .build();
-    }
-
-    private String resolveRedirect(String configuredUrl, String fallbackUrl) {
-        return configuredUrl == null || configuredUrl.isBlank() ? fallbackUrl : configuredUrl;
     }
 }
