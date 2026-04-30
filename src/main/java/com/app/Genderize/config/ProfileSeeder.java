@@ -81,7 +81,7 @@ public class ProfileSeeder implements CommandLineRunner {
                     .name(normalizedName)
                     .gender(seedProfile.gender())
                     .genderProbability(seedProfile.genderProbability() == null ? 0.0 : seedProfile.genderProbability())
-//                    .sampleSize(seedProfile.sampleSize() == null ? 0 : seedProfile.sampleSize())
+                    .sampleSize(0)
                     .age(seedProfile.age())
                     .ageGroup(seedProfile.ageGroup())
                     .countryId(seedProfile.countryId())

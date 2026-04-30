@@ -72,14 +72,14 @@ public class AuthController {
                                HttpServletResponse response) throws IOException {
         String verifier = oauthStateCache.get(state);
         if (verifier == null) {
-            response.sendRedirect(resolveRedirect(systemProperties.getWebFailureRedirectUrl(), "/login"));
+            response.sendRedirect(systemProperties.getWebFailureRedirectUrl());
             return;
         }
 
         TokenService.AuthResponse tokens = completeGithubLogin(code, verifier, systemProperties.getGithubRedirectUri());
         log.info("Auth Response : {}", tokens);
         addAuthCookies(response, tokens);
-        response.sendRedirect(resolveRedirect(systemProperties.getWebSuccessRedirectUrl(), "/dashboard"));
+        response.sendRedirect(systemProperties.getWebSuccessRedirectUrl());
     }
 
     @GetMapping("/github/cli")
