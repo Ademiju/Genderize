@@ -2,6 +2,7 @@ package com.app.Genderize.controller;
 
 import com.app.Genderize.config.SystemProperties;
 import com.app.Genderize.config.auth.OAuthStateCache;
+import com.app.Genderize.dto.request.RefreshTokenRequest;
 import com.app.Genderize.enums.Role;
 import com.app.Genderize.exception.BadCredentialException;
 import com.app.Genderize.exception.ExternalApiException;
@@ -12,7 +13,6 @@ import com.app.Genderize.service.RefreshTokenDaoService;
 import com.app.Genderize.service.TokenService;
 import com.app.Genderize.service.UserDaoService;
 import com.app.Genderize.util.PkceUtil;
-import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,7 +64,7 @@ public class AuthController {
     }
 
     @GetMapping("/github/callback")
-    public TokenService.AuthResponse githubCallback(@RequestParam String code,
+    public void githubCallback(@RequestParam String code,
                                @RequestParam String state,
                                HttpServletResponse response) throws IOException {
         String verifier = oauthStateCache.get(state);
@@ -76,7 +76,6 @@ public class AuthController {
         log.info("Auth Response : {}", tokens);
         addAuthCookies(response, tokens);
         response.sendRedirect(systemProperties.getWebSuccessRedirectUrl());
-        return tokens;
     }
 
     @GetMapping("/github/cli")
@@ -111,6 +110,7 @@ public class AuthController {
         }
 
         if(code.equals("test_code") || code.equals("analyst_test_code")){
+            log.info("test code detected: {}", code);
             User user = userDaoService.findOrCreateTestUser(code);
             return tokenService.issue(user);
 
@@ -156,17 +156,16 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public TokenService.AuthResponse refresh(@RequestBody(required = false) Map<String, String> req,
+    public TokenService.AuthResponse refresh(@RequestBody (required = false) RefreshTokenRequest refreshTokenRequest,
                                              @CookieValue(value = "refresh_token", required = false) String refreshCookie,
                                              HttpServletResponse response) {
-        log.warn("Refresh token missing: cookies={}, body={}", refreshCookie, req);
         String rawRefreshToken =
-                (req != null && req.get("refresh_token") != null)
-                        ? req.get("refresh_token")
+                (refreshTokenRequest != null && refreshTokenRequest.getRefresh_token() != null)
+                        ? refreshTokenRequest.getRefresh_token()
                         : refreshCookie;
 
         if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
-            throw new RuntimeException("Missing refresh token");
+            throw new BadCredentialException("Missing refresh token");
         }
 
         RefreshToken token = refreshTokenDaoService.validate(rawRefreshToken);

@@ -73,6 +73,7 @@ public class UserDaoService {
                             .build();
             return userRepository.save(user);
         }
+        log.info("Test User created successfully: {}", optionalUser.get());
         return optionalUser.get();
     }
 }

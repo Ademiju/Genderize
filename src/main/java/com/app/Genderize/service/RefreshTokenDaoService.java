@@ -24,7 +24,7 @@ public class RefreshTokenDaoService {
         token.setId(UUID.randomUUID());
         token.setUserId(user.getId());
         token.setTokenHash(hash(rawToken));
-        token.setExpiresAt(Instant.now().plusSeconds(300));
+        token.setExpiresAt(Instant.now().plusSeconds(3000));
         return repository.save(token);
     }
 
@@ -37,13 +37,14 @@ public class RefreshTokenDaoService {
         if (token.isRevoked() || token.getExpiresAt().isBefore(Instant.now())) {
             throw new RuntimeException("Expired or revoked");
         }
-
+        log.info("Successfully validated refresh token");
         return token;
     }
 
     public void revoke(RefreshToken token) {
         token.setRevoked(true);
         repository.save(token);
+        log.info("Successfully revoked refresh token");
     }
 
     private String hash(String token) {
