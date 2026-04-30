@@ -22,7 +22,7 @@ public class TokenService {
         String refreshRaw = UUID.randomUUID().toString();
 
         refreshTokenDaoService.create(user, refreshRaw);
-
+        log.info("Token successfully issued");
         return new AuthResponse("success", access, refreshRaw, user.getUsername(), user.getRole().name());
     }
 
