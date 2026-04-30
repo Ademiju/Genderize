@@ -1,6 +1,7 @@
 package com.app.Genderize.service;
 
 import com.app.Genderize.config.SystemProperties;
+import com.app.Genderize.exception.ExternalApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -45,7 +46,7 @@ public class OAuth2Service {
         Map<String, Object> responseBody = response.getBody();
 
         if (responseBody == null || responseBody.get("access_token") == null) {
-            throw new RuntimeException("Failed to retrieve GitHub access token");
+            throw new ExternalApiException("Failed to retrieve GitHub access token");
         }
 
         return (String) responseBody.get("access_token");
