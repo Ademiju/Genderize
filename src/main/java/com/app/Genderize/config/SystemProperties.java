@@ -24,5 +24,5 @@ public class SystemProperties {
     private String githubRedirectUri;
     private String webSuccessRedirectUrl;
     private String webFailureRedirectUrl;
-    private boolean cookieSecure = true;
+    private boolean cookieSecure;
 }
