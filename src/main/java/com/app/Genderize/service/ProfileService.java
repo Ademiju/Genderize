@@ -75,7 +75,7 @@ public class ProfileService {
                 .name(normalizedName)
                 .gender(genderizeRequest.getGender())
                 .genderProbability(genderizeRequest.getProbability())
-//                .sampleSize(genderizeDto.getCount())
+                .sampleSize(genderizeRequest.getCount())
                 .age(agifyRequest.getAge())
                 .ageGroup(classifyAge(agifyRequest.getAge()))
                 .countryId(topCountry.getCountry_id())
