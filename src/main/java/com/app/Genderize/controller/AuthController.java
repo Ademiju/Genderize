@@ -137,7 +137,7 @@ public class AuthController {
         ResponseCookie accessCookie = ResponseCookie.from("access_token", tokens.access_token())
                 .httpOnly(true)
                 .secure(systemProperties.isCookieSecure())
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofMinutes(3))
                 .build();
@@ -145,7 +145,7 @@ public class AuthController {
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", tokens.refresh_token())
                 .httpOnly(true)
                 .secure(systemProperties.isCookieSecure())
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofMinutes(5))
                 .build();
@@ -183,8 +183,16 @@ public class AuthController {
     public TokenService.AuthResponse refresh(@RequestBody(required = false) Map<String, String> req,
                                              @CookieValue(value = "refresh_token", required = false) String refreshCookie,
                                              HttpServletResponse response) {
+        log.warn("Refresh token missing: cookies={}, body={}", refreshCookie, req);
+        String rawRefreshToken =
+                (req != null && req.get("refresh_token") != null)
+                        ? req.get("refresh_token")
+                        : refreshCookie;
 
-        String rawRefreshToken = req == null ? refreshCookie : req.getOrDefault("refresh_token", refreshCookie);
+        if (rawRefreshToken == null || rawRefreshToken.isBlank()) {
+            throw new RuntimeException("Missing refresh token");
+        }
+
         RefreshToken token = refreshTokenDaoService.validate(rawRefreshToken);
 
         refreshTokenDaoService.revoke(token);
@@ -192,7 +200,9 @@ public class AuthController {
         User user = userDaoService.findById(token.getUserId());
 
         TokenService.AuthResponse tokens = tokenService.issue(user);
+
         addAuthCookies(response, tokens);
+
         return tokens;
     }
 
@@ -214,7 +224,7 @@ public class AuthController {
         return ResponseCookie.from(name, "")
                 .httpOnly(true)
                 .secure(systemProperties.isCookieSecure())
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
