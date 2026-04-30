@@ -36,6 +36,7 @@ public class Profile {
 
     @Column(columnDefinition = "varchar")
     private String countryId;
+    private String countryName;
     private double countryProbability;
 
     private Instant createdAt;

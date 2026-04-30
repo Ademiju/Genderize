@@ -13,5 +13,7 @@ public class PageResponse<T> {
     private int page;
     private int limit;
     private long total;
+    private int totalPages;
+    private Object links;
     private T data;
 }

@@ -13,5 +13,16 @@ import org.springframework.context.annotation.Configuration;
 @NoArgsConstructor
 public class SystemProperties {
     private String genderizeBaseUrl;
-    private String genderizeApiKey;
+    private String agifyBaseUrl;
+    private String nationalizeBaseUrl;
+    private String jwtSecret;
+    private String githubClientId;
+    private String githubClientSecret;
+    private String githubTokenUrl;
+    private String githubUserUrl;
+    private String githubAuthorizeUrl;
+    private String githubRedirectUri;
+    private String webSuccessRedirectUrl;
+    private String webFailureRedirectUrl;
+    private boolean cookieSecure = true;
 }
